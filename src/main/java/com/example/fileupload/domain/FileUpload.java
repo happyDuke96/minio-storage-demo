@@ -3,7 +3,8 @@ package com.example.fileupload.domain;
 import com.example.fileupload.dto.UploadFileResponse;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -38,11 +39,11 @@ public class FileUpload {
         UploadFileResponse fileResponse = new UploadFileResponse();
         fileResponse.setId(getId());
         fileResponse.setFileName(getFileName());
-        fileResponse.setName(FileNameUtils.getName(getFileName()));
+        fileResponse.setName(FilenameUtils.getName(getFileName()));
         fileResponse.setContentType(getContentType());
         fileResponse.setFileDownloadUri(getUrl());
         fileResponse.setSize(getSize());
-        fileResponse.setFileSize(FileUtils.getFileNameSizeAsString(getSize()));
+        fileResponse.setFileSize(FileUtils.byteCountToDisplaySize(getSize()));
         return fileResponse;
     }
 

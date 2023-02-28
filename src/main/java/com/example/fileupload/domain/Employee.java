@@ -1,13 +1,16 @@
 package com.example.fileupload.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.example.fileupload.dto.FileUploadDTO;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employee {
 
     @Id

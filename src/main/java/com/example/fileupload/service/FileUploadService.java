@@ -44,7 +44,7 @@ public class FileUploadService {
         this.validateFile(file);
         FileUploadDTO dto;
         try {
-            dto = uploadToStorageServer(file.getBytes(), file.getOriginalFilename(), file.getContentType())
+            dto = uploadToStorageServer(file.getBytes(), file.getOriginalFilename(), file.getContentType());
         } catch (IOException e) {
             log.error("An unaccepted error has occurred while uploading file: ", e);
             throw new RuntimeException("An unaccepted error has occurred while uploading file");
@@ -96,7 +96,7 @@ public class FileUploadService {
                 log.error("Close uploaded file error: {}", e.getMessage());
             }
         }
-        return uploadDTO
+        return uploadDTO;
     }
 
 
