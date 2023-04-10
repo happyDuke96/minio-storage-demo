@@ -5,9 +5,11 @@ import com.example.fileupload.dto.EmployeeDTO;
 import com.example.fileupload.repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@Transactional
 public class EmployeeService {
 
     private final FileUploadService fileUploadService;
@@ -31,12 +33,13 @@ public class EmployeeService {
     }
 
     public void update(EmployeeDTO dto){
-        Employee employee = Employee
-                .builder()
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .logoId(dto.getLogoId())
-                .build();
+        Employee employee = new Employee();
+        if (dto.getFirstName() != null){
+            employee.setFirstName(dto.getFirstName());
+        }
+        if (dto.getLastName() != null){
+            employee.setLastName(dto.getLastName());
+        }
         repository.save(employee);
     }
 }

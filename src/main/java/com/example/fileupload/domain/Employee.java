@@ -4,6 +4,9 @@ import com.example.fileupload.dto.FileUploadDTO;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -29,4 +32,13 @@ public class Employee {
 
     @Column(name = "logo_id")
     private String logoId;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "employee_details",
+            joinColumns = @JoinColumn(name = "employee_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    )
+    @Column(name = "product_details")
+    private Set<EmployeeDetail> details;
+
 }
