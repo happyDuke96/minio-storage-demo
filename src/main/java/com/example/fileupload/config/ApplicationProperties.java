@@ -6,8 +6,9 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "minio", ignoreUnknownFields = false)
-@Getter @Setter
+@ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
+@Getter
+@Setter
 public class ApplicationProperties {
 
     MinioStorage minioStorage = new MinioStorage();

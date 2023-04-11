@@ -9,9 +9,9 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-  application:
-    minioStorage:
-          application: test-app
-          host: 'http://127.0.0.1:9090'
-          username: minioadmin
-          password: minioadmin
+application:
+  minio-storage:
+    application: images
+    host: 'http://127.0.0.1:9000'
+    username: minioadmin
+    password: minioadmin

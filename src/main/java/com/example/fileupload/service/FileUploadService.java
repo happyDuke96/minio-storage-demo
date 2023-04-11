@@ -1,8 +1,11 @@
 package com.example.fileupload.service;
 
 import com.example.fileupload.config.ApplicationProperties;
+import com.example.fileupload.domain.Employee;
 import com.example.fileupload.domain.FileUpload;
 import com.example.fileupload.dto.FileUploadDTO;
+import com.example.fileupload.dto.UploadFileResponse;
+import com.example.fileupload.repository.EmployeeRepository;
 import com.example.fileupload.repository.FileUploadRepository;
 import io.minio.BucketExistsArgs;
 import io.minio.MinioClient;
@@ -16,9 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,19 +31,21 @@ public class FileUploadService {
 
     private final MinioClient minioClient;
     private final FileUploadRepository repository;
+    private final EmployeeRepository employeeRepository;
     private ApplicationProperties properties;
 
 
     public FileUploadService(MinioClient minioClient,
                              FileUploadRepository repository,
-                             ApplicationProperties properties) {
+                             EmployeeRepository employeeRepository, ApplicationProperties properties) {
         this.minioClient = minioClient;
         this.repository = repository;
+        this.employeeRepository = employeeRepository;
         this.properties = properties;
     }
 
 
-    public FileUpload fileUpload(MultipartFile file) {
+    public UploadFileResponse fileUpload(MultipartFile file, Integer id) {
         this.validateFile(file);
         FileUploadDTO dto;
         try {
@@ -55,7 +60,12 @@ public class FileUploadService {
         fileUpload.setSize(file.getSize());
         fileUpload.setUrl(dto.getUrl());
         fileUpload = repository.save(fileUpload);
-        return fileUpload;
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+        if (optionalEmployee.isPresent()){
+            optionalEmployee.get().setLogoId(fileUpload.getId());
+            employeeRepository.save(optionalEmployee.get());
+        }
+        return fileUpload.getDTO();
     }
 
 
@@ -112,9 +122,9 @@ public class FileUploadService {
     private String encodeFileName(String originalFilename) {
         String filename = null;
         try {
-            URLEncoder.encode(originalFilename, "UTF-8");
-            URLDecoder.decode(filename, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+            filename = URLEncoder.encode(originalFilename, "UTF-8");
+            filename = URLDecoder.decode(filename, "UTF-8");
+        } catch (Exception e) {
             log.info(e.getMessage());
         }
         return filename;
@@ -122,7 +132,7 @@ public class FileUploadService {
 
     private String getObjectName(String fileName, UUID uuid) {
         String correctedName = encodeFileName(fileName);
-        String filename = FileNameUtils.getBaseName(fileName);
+        String filename = FileNameUtils.getBaseName(correctedName);
         String extension = FileNameUtils.getExtension(filename);
         return filename.concat("-").concat(uuid.toString()).concat(!StringUtils.hasLength(extension) ? "" : "." + extension);
     }
@@ -139,5 +149,8 @@ public class FileUploadService {
             throw new RuntimeException("Error upload file");
         }
     }
-
+    public UploadFileResponse get(List<String> fileNames){
+        repository.findAllByFileNameIn(fileNames);
+        return new UploadFileResponse();
+    }
 }

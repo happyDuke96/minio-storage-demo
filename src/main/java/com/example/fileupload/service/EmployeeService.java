@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 @Slf4j
 @Transactional
@@ -41,5 +43,10 @@ public class EmployeeService {
             employee.setLastName(dto.getLastName());
         }
         repository.save(employee);
+    }
+
+    public EmployeeDTO get(Integer id){
+        Employee employee = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("employee not found"));
+        return employee.toDto();
     }
 }
