@@ -2,16 +2,16 @@ server:
   port: 8282
 spring:
   datasource:
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://localhost:5432/minio_db
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 application:
   minio-storage:
     application: images
-    host: 'http://127.0.0.1:9000'
+    host: 'http://127.0.0.1:9000' # 9000 S3 port
     username: minioadmin
     password: minioadmin
