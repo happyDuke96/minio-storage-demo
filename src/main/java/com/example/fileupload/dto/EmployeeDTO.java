@@ -20,5 +20,5 @@ public class EmployeeDTO {
     String logoId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    FileUploadDTO fileDTO;
+    FileDTO logo;
 }

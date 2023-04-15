@@ -23,4 +23,6 @@ public class UploadFileResponse {
     Long size;
 
     String fileSize;
+
+    String path;
 }

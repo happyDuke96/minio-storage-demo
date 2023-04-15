@@ -36,6 +36,9 @@ public class Employee {
         dto.setFirstName(this.getFirstName());
         dto.setLastName(this.getLastName());
         dto.setLogoId(this.getLogoId());
+        if (this.getLogo() != null) {
+            dto.setLogo(this.getLogo().getFileDTO());
+        }
         return dto;
     }
 }

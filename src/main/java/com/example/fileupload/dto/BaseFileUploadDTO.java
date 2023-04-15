@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FileUploadDTO {
+public class BaseFileUploadDTO {
     String id;
 
     String contentType;
@@ -16,4 +16,6 @@ public class FileUploadDTO {
     String fileName;
 
     String url;
+
+    String path;
 }

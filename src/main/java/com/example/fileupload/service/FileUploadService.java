@@ -1,10 +1,9 @@
 package com.example.fileupload.service;
 
 import com.example.fileupload.config.ApplicationProperties;
-import com.example.fileupload.domain.Employee;
 import com.example.fileupload.domain.FileUpload;
-import com.example.fileupload.dto.FileUploadDTO;
-import com.example.fileupload.dto.UploadFileResponse;
+import com.example.fileupload.dto.BaseFileUploadDTO;
+import com.example.fileupload.exception.BadRequestException;
 import com.example.fileupload.repository.EmployeeRepository;
 import com.example.fileupload.repository.FileUploadRepository;
 import io.minio.BucketExistsArgs;
@@ -21,13 +20,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Slf4j
-public class FileUploadService {
+public class FileUploadService extends BaseService{
 
     private final MinioClient minioClient;
     private final FileUploadRepository repository;
@@ -38,6 +36,7 @@ public class FileUploadService {
     public FileUploadService(MinioClient minioClient,
                              FileUploadRepository repository,
                              EmployeeRepository employeeRepository, ApplicationProperties properties) {
+        super(repository);
         this.minioClient = minioClient;
         this.repository = repository;
         this.employeeRepository = employeeRepository;
@@ -45,14 +44,14 @@ public class FileUploadService {
     }
 
 
-    public UploadFileResponse fileUpload(MultipartFile file, Integer id) {
+    public FileUpload fileUpload(MultipartFile file) {
         this.validateFile(file);
-        FileUploadDTO dto;
+        BaseFileUploadDTO dto;
         try {
             dto = uploadToStorageServer(file.getBytes(), file.getOriginalFilename(), file.getContentType());
         } catch (IOException e) {
             log.error("An unaccepted error has occurred while uploading file: ", e);
-            throw new RuntimeException("An unaccepted error has occurred while uploading file");
+            throw new BadRequestException("An unaccepted error has occurred while uploading file");
         }
         FileUpload fileUpload = new FileUpload();
         fileUpload.setFileName(dto.getFileName());
@@ -60,16 +59,11 @@ public class FileUploadService {
         fileUpload.setSize(file.getSize());
         fileUpload.setUrl(dto.getUrl());
         fileUpload = repository.save(fileUpload);
-        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
-        if (optionalEmployee.isPresent()){
-            optionalEmployee.get().setLogoId(fileUpload.getId());
-            employeeRepository.save(optionalEmployee.get());
-        }
-        return fileUpload.getDTO();
+        return fileUpload;
     }
 
 
-    public FileUploadDTO uploadToStorageServer(byte[] file, String fileName, String contentType) {
+    public BaseFileUploadDTO uploadToStorageServer(byte[] file, String fileName, String contentType) {
         UUID uuid = UUID.randomUUID();
         String filename = encodeFileName(fileName);
         String objectName = getObjectName(fileName, uuid);
@@ -81,7 +75,7 @@ public class FileUploadService {
         log.info("contentType: {} -------------------------------------", contentType);
         log.info("objectSize: {} -------------------------------------", file.length);
 
-        FileUploadDTO uploadDTO = null;
+        BaseFileUploadDTO uploadDTO = null;
         try {
 
             this.uploadWIthPutObject(
@@ -93,9 +87,10 @@ public class FileUploadService {
                             .contentType(contentType)
                             .build()
             );
-            uploadDTO = new FileUploadDTO();
+            uploadDTO = new BaseFileUploadDTO();
             uploadDTO.setId(uuid.toString());
             uploadDTO.setFileName(filename);
+            uploadDTO.setPath(String.format("%s/%s",properties.getMinioStorage().getApplication(),objectName));
             uploadDTO.setUrl(properties.getMinioStorage().getHost());
         } catch (Exception e) {
             log.error("Close uploaded file error: {}", e.getMessage());
@@ -110,14 +105,7 @@ public class FileUploadService {
     }
 
 
-    private void validateFile(MultipartFile file) {
-        if (file.isEmpty() || file == null) {
-            throw new RuntimeException("");
-        }
-        if (!StringUtils.hasLength(file.getOriginalFilename())) {
-            throw new RuntimeException("");
-        }
-    }
+
 
     private String encodeFileName(String originalFilename) {
         String filename = null;
@@ -141,16 +129,12 @@ public class FileUploadService {
 
         try {
             if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(objectArgs.bucket()).build())) {
-                throw new RuntimeException("Bucket not exist");
+                throw new BadRequestException("Bucket not exist");
             }
             Optional.ofNullable(this.minioClient.putObject(objectArgs)).map(ObjectWriteResponse::etag);
         } catch (Exception e) {
             log.error("Error upload file: {}", e.getMessage());
-            throw new RuntimeException("Error upload file");
+            throw new BadRequestException("Error upload file");
         }
-    }
-    public UploadFileResponse get(List<String> fileNames){
-        repository.findAllByFileNameIn(fileNames);
-        return new UploadFileResponse();
     }
 }

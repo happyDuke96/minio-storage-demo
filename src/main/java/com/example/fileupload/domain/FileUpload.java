@@ -1,21 +1,22 @@
 package com.example.fileupload.domain;
 
+import com.example.fileupload.dto.FileDTO;
 import com.example.fileupload.dto.UploadFileResponse;
+import com.example.fileupload.utils.FileUtils;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @Entity
-public class FileUpload {
+public class FileUpload implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -34,6 +35,12 @@ public class FileUpload {
     @Column(name = "size")
     private Long size;
 
+    @Column(name = "file_id")
+    private String fileId;
+
+    @Column(name = "path")
+    private String path;
+
 
     public UploadFileResponse getDTO() {
         UploadFileResponse fileResponse = new UploadFileResponse();
@@ -43,8 +50,11 @@ public class FileUpload {
         fileResponse.setContentType(getContentType());
         fileResponse.setFileDownloadUri(getUrl());
         fileResponse.setSize(getSize());
-        fileResponse.setFileSize(FileUtils.byteCountToDisplaySize(getSize()));
+        fileResponse.setFileSize(FileUtils.getFileNameSizeAsString(getSize()));
         return fileResponse;
+    }
+    public FileDTO getFileDTO() {
+        return new FileDTO(getId(), getUrl());
     }
 
 }

@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
+import java.util.List;
+
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PUBLIC;
 
@@ -33,8 +36,26 @@ public class EmployeeResource {
         return ResponseEntity.ok().body(employeeService.get(id));
     }
 
-    @PostMapping("/upload/{id}")
-    public ResponseEntity<UploadFileResponse> uploadAvatar(@PathVariable Integer id, @RequestPart("file")MultipartFile file){
-        return ResponseEntity.ok().body(fileUploadService.fileUpload(file,id));
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Void> update(@PathVariable Integer id,@RequestBody EmployeeDTO dto){
+        employeeService.update(id,dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<EmployeeDTO>> getList(){
+        return ResponseEntity.ok().body(employeeService.getList());
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Void> create(EmployeeDTO dto){
+        employeeService.create(dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/upload")
+    public ResponseEntity<UploadFileResponse> uploadImage(@PathVariable Integer id,@RequestPart("file") MultipartFile file){
+        log.debug("REST request to upload Employee image: {}", id);
+        return ResponseEntity.ok().body(employeeService.uploadImage(id, file));
     }
 }
